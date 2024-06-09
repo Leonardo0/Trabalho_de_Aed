@@ -24,14 +24,11 @@ public:
     posicao = pos;
   }
 
-  void print() { // Pra efeito de testes mostra os atributos
-    cout << CommandNee << endl;
-  }
-
   int getPosicao() { return posicao; } 
 };
 
-template <typename T> class Lista { //template pra generalizar a lista
+template <typename T>
+class Lista { //template pra generalizar a lista
 public:
   T *programaNee;   // Vetor
   int tamanho;      // Tamanho do vetor
@@ -58,24 +55,16 @@ public:
     }
   }
 
-  void
-  remover(int posicao) {                             // remove o elemento da posicao desejada se ela existir
+  void remover(int posicao) {                             // remove o elemento da posicao desejada se ela existir
     if (posicao < tamanhoAtual) {
       for (int i = posicao; i < tamanhoAtual - 1; i++) {
         programaNee[i] = programaNee[i + 1];
       }
       tamanhoAtual--;
-    } else {
+    }
+    else {
       cout << "Posicao invalida." << endl;
     }
-  }
-
-  void print() {                                  // outro comando pra efeito de testes que mostra os elementos
-    cout << "Comandos: \n";                      // da lista
-    for (int i = 0; i < tamanhoAtual; i++) {
-      programaNee[i].print();
-    }
-    cout << endl;
   }
 
   int buscar(string k) {                         // busca o comando na lista e retorna a posicao
@@ -123,77 +112,69 @@ public:
   int getTamanhoMax() { return tamanho; }
 };
 
-class No { // No da pilha
-public:
-  int dadoDoNo; // valor do no
-  No *prox;     // proximo no
+// Definicao da estrutura de no, agora como template
+template <typename T>
+struct No {
+  T dadoDoNo;
+  No* prox;
 
-  No(int dado) { // construtor
-    dadoDoNo = dado;
-    prox = nullptr;
-  }
+  No(T valor) : dadoDoNo(valor), prox(nullptr) {}
 };
 
-class Pilha { // fiz so o no do topo pq n entendi como fazer com o fundo mas
-              // assim ta funcionando bem e ta simples
+// Definicao da classe Pilha como template
+template <typename T>
+class Pilha {
 private:
-  No *topo;
+  No<T>* topo;
   int pos;
 
 public:
-  Pilha() { // construtor
-    topo = nullptr;
-  }
+  // Construtor
+  Pilha() : topo(nullptr), pos(0) {}
 
-  ~Pilha() { // destrutor
+  // Destrutor
+  ~Pilha() {
     while (!estaVazia()) {
       desempilha();
     }
   }
 
-  bool estaVazia() { // verifica se a pilha esta vazia
+  // Verifica se a pilha esta vazia
+  bool estaVazia() const {
     return topo == nullptr;
   }
 
-  void
-  empilha(int valor) { // cria um no auxiliar e empilha ele aumentando a pilha
-    No *aux = new No(valor);
-
-    if (estaVazia()) { // sem elementos, aux se torna o topo
-      topo = aux;
-    } else {
-      // aux aponta para antiga cabeca, se tornando o topo
-      No *anterior = topo;
-      aux->prox = anterior;
-
-      topo = aux;
-    }
+  // Empilha um valor
+  void empilha(T valor) {
+    No<T>* aux = new No<T>(valor);
+    aux->prox = topo;
+    topo = aux;
+    pos++;
   }
 
-  int desempilha() { // desempilha o topo da pilha tambem com um no auxiliar
+  // Desempilha o topo da pilha
+  T desempilha() {
     if (estaVazia()) {
       cout << "Pilha vazia, nao e possivel desempilhar." << endl;
-      return -1;
+      return T(); // Retorna um valor padrao do tipo T
     }
 
-    // desempilhando sempre retorna o valor ate entao
-    int dado_atual = topo->dadoDoNo;
-
-    // salva o ponteiro da cabeca ate entao, para deletar
-    No *antigo = topo;
-    No *prox = topo->prox;
-
-    // cabeca agora e o proximo elemento da cabeca anterior, mesmo se nulo
-    topo = prox;
+    T dado_atual = topo->dadoDoNo;
+    No<T>* antigo = topo;
+    topo = topo->prox;
     delete antigo;
+    pos--;
 
     return dado_atual;
   }
 
-  int getPos() { return pos; }
+  // Retorna a posicao atual (tamanho da pilha)
+  int getPos() const {
+    return pos;
+  }
 };
 
-string chama_func_str(string k, int posicao, Lista<Nee> *lista, Pilha *pilha) {   // chama a funcao desejada 
+string chama_func_str(string k, int posicao, Lista<Nee> *lista, Pilha<int> *pilha) {   // chama a funcao desejada 
   string temp = "";
   int func = 0;
 
@@ -235,7 +216,7 @@ string comando_sem_tab(string comando) { // remove os tabs do comando
   return string("");
 }
 
-void interpretar(string comando, Lista<Nee> *lista, Pilha *pilha) {
+void interpretar(string comando, Lista<Nee> *lista, Pilha<int> *pilha) {
   const int tam = (int)lista->tamanhoAtual;
   int inicio = lista->buscar(comando); // busca a posicao do comando na lista
 
@@ -249,11 +230,13 @@ void interpretar(string comando, Lista<Nee> *lista, Pilha *pilha) {
           // linha vazia, retorna do metodo
           if (pilha->estaVazia()) {
             break; // sai do loop
-          } else { // se a pilha tem algum valor de retorno, voltamos para
+          }
+          else { // se a pilha tem algum valor de retorno, voltamos para
                    // aquela linha
             linha_atual = pilha->desempilha();
           }
-        } else { // processa o comando da linha atual
+        }
+        else { // processa o comando da linha atual
           string sem_tab = comando_sem_tab(cmd_atual);
 
           if (sem_tab.length() == 1) {                 // chamada de funcao
@@ -273,7 +256,8 @@ void interpretar(string comando, Lista<Nee> *lista, Pilha *pilha) {
             }
           }
         }
-      } else {
+      }
+      else {
         break;
       }
 
@@ -284,7 +268,7 @@ void interpretar(string comando, Lista<Nee> *lista, Pilha *pilha) {
 
 int main() {
   Lista<Nee> NeeList(300);
-  Pilha NeeStack;
+  Pilha<int> NeeStack;
   int pos = 0;
 
   char linha[128];
@@ -303,9 +287,6 @@ int main() {
       break;
     }
   }
-
-  cout << endl;
-  cout << endl;
 
   string comando = "Z :";
 
